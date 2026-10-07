@@ -48,6 +48,7 @@ import {
   ENEMY_SPRITE_SIZES,
   ENEMY_SPRITES,
   PICKUP_SPRITES,
+  PLAYER_FACING_OFFSET,
   PLAYER_SPRITE,
   PLAYER_SPRITE_SIZE,
 } from "../sprites";
@@ -69,6 +70,8 @@ export type SessionResult = {
 };
 
 type Phase = "playing" | "levelup" | "gameover" | "cleared" | "paused";
+
+const RENDER_INTERVAL_MS = 1000 / 40;
 
 type Floater = {
   id: number;
@@ -344,6 +347,7 @@ export function GameScreen({ onFinish, perks, stageId, weaponId, characterId, ch
   const flashRef = useRef(new Animated.Value(0)).current;
   const iFramesRef = useRef(new Animated.Value(0)).current;
   const pausedRef = useRef(false);
+  const lastRenderRef = useRef(0);
 
   const setTargetFromEvent = (event: GestureResponderEvent) => {
     if (phaseRef.current !== "playing") {
@@ -502,9 +506,13 @@ export function GameScreen({ onFinish, perks, stageId, weaponId, characterId, ch
             floaters.splice(i, 1);
           }
         }
+
+        if (now - lastRenderRef.current >= RENDER_INTERVAL_MS) {
+          lastRenderRef.current = now;
+          setTick((tick) => tick + 1);
+        }
       }
 
-      setTick((tick) => tick + 1);
       raf = requestAnimationFrame(step);
     };
 
@@ -577,6 +585,16 @@ export function GameScreen({ onFinish, perks, stageId, weaponId, characterId, ch
   const playerBlink = player.invuln > 0 && Math.floor(player.invuln * 12) % 2 === 0;
   const playerBob = Math.sin(game.time * 7) * 1.2;
   const playerPulse = 1 + Math.sin(game.time * 4) * 0.02;
+  const playerFacing = player.dashTime > 0 ? player.dashDir : game.moveDir;
+  const playerAngle = Math.atan2(playerFacing.y, playerFacing.x) + PLAYER_FACING_OFFSET;
+
+  const viewMargin = 60;
+  const viewLeft = game.camX - viewMargin;
+  const viewRight = game.camX + width + viewMargin;
+  const viewTop = game.camY - viewMargin;
+  const viewBottom = game.camY + height + viewMargin;
+  const onScreen = (x: number, y: number) =>
+    x >= viewLeft && x <= viewRight && y >= viewTop && y <= viewBottom;
   const dashReady = player.dashCooldown <= 0;
   const dashRatio = Math.max(0, Math.min(1, 1 - player.dashCooldown / DASH_DURATION));
   const comboVisible = game.combo >= 2 && game.comboTimer > 0;
@@ -678,7 +696,9 @@ export function GameScreen({ onFinish, perks, stageId, weaponId, characterId, ch
             />
           ))}
 
-          {game.pickups.map((pickup: Pickup) => {
+          {game.pickups
+            .filter((pickup: Pickup) => onScreen(pickup.x, pickup.y))
+            .map((pickup: Pickup) => {
             const pulse = 1 + 0.15 * Math.sin(game.time * 5 + pickup.id);
             return (
               <Image
@@ -696,7 +716,9 @@ export function GameScreen({ onFinish, perks, stageId, weaponId, characterId, ch
             );
           })}
 
-          {game.drops.map((drop) => {
+          {game.drops
+            .filter((drop) => onScreen(drop.x, drop.y))
+            .map((drop) => {
             const isGem = drop.kind === "gem";
             return (
               <Image
@@ -714,7 +736,9 @@ export function GameScreen({ onFinish, perks, stageId, weaponId, characterId, ch
             );
           })}
 
-          {game.enemies.map((enemy) => {
+          {game.enemies
+            .filter((enemy) => onScreen(enemy.x, enemy.y))
+            .map((enemy) => {
             const isTank = enemy.kind === "tank";
             const healthBarWidth = isTank ? enemy.radius * 2.4 : enemy.radius * 2;
             const healthBarTop = enemy.y - game.camY - (isTank ? enemy.radius * 1.44 + 7 : enemy.radius + 7);
@@ -824,7 +848,11 @@ export function GameScreen({ onFinish, perks, stageId, weaponId, characterId, ch
                 left: player.x - game.camX - PLAYER_SPRITE_SIZE.width / 2,
                 top: player.y - game.camY - PLAYER_SPRITE_SIZE.height / 2,
                 height: PLAYER_SPRITE_SIZE.height,
-                transform: [{ translateY: playerBob }, { scale: playerPulse }],
+                transform: [
+                  { translateY: playerBob },
+                  { scale: playerPulse },
+                  { rotate: `${playerAngle}rad` },
+                ],
                 width: PLAYER_SPRITE_SIZE.width,
               },
             ]}

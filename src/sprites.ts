@@ -24,6 +24,8 @@ export const ENEMY_SPRITES: Partial<Record<EnemyKind, ImageSourcePropType>> = {
 
 export const PLAYER_SPRITE_SIZE = { height: 40, width: 35 };
 
+export const PLAYER_FACING_OFFSET = Math.PI / 2;
+
 export const ENEMY_SPRITE_SIZES: Partial<Record<EnemyKind, { height: number; width: number }>> = {
   walker: { height: 39, width: 36 },
   runner: { height: 31, width: 28 },

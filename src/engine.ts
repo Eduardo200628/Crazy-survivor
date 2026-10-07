@@ -190,7 +190,7 @@ const PAD = 16;
 const ENEMY_SPEED_SCALE = 50;
 const WAVE_DURATION = 20;
 const MAX_DROPS = 180;
-const CULL_DISTANCE = 1100;
+const CULL_DISTANCE = 900;
 const HITSTOP_ON_IMPACT = 0.015;
 const HITSTOP_ON_KILL = 0.05;
 const COMBO_WINDOW = 2.4;
@@ -221,7 +221,7 @@ const ENEMY_STATS: Record<
   boss: { radius: 42, hp: 1600, speed: 48, damage: 35, coins: 40, xp: 6, gemChance: 1, gemValue: 1, shoot: true, boss: true },
 };
 
-const MAX_ENEMIES = 140;
+const MAX_ENEMIES = 110;
 
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
