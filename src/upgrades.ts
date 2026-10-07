@@ -9,7 +9,11 @@ export type UpgradeId =
   | "regen"
   | "bulletSpeed"
   | "crit"
-  | "heal";
+  | "heal"
+  | "nova"
+  | "lifesteal"
+  | "thorns"
+  | "orbital";
 
 export type Upgrade = {
   id: UpgradeId;
@@ -84,5 +88,29 @@ export const UPGRADES: Upgrade[] = [
     label: "Cura total",
     description: "Recuperas toda tu vida",
     max: 1,
+  },
+  {
+    id: "nova",
+    label: "Nova",
+    description: "Al matar, explota una onda que daña enemigos cercanos",
+    max: 5,
+  },
+  {
+    id: "lifesteal",
+    label: "Robo de vida",
+    description: "Cada enemigo muerto te cura +1.5 de vida",
+    max: 6,
+  },
+  {
+    id: "thorns",
+    label: "Espinas",
+    description: "Los enemigos reciben 12 de dano al tocarte",
+    max: 5,
+  },
+  {
+    id: "orbital",
+    label: "Orbital",
+    description: "Añade una cuchilla que gira alrededor de ti y daña",
+    max: 5,
   },
 ];
